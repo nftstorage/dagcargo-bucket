@@ -1,20 +1,44 @@
 /* eslint-env worker */
+import { HttpError } from './errors.js'
+import { toR2Range } from './r2.js'
 
 export default {
   async fetch (request, env) {
-    const url = new URL(request.url)
-    const key = url.pathname.slice(1)
+    try {
+      const response = await handler(request, env)
+      return response
+    } catch (err) {
+      console.error(err)
+      if (err instanceof HttpError) {
+        return new Response(err.message, { status: err.status, headers: err.headers })
+      }
+      return new Response(err.message || 'Server Error', { status: 500 })
+    }
+  }
+}
 
-    if (request.method !== 'GET') {
-      return new Response('Method Not Allowed', {
-        status: 405,
-        headers: { Allow: 'GET' }
-      })
+/**
+ * @param {Request} request
+ * @param {{ DAGCARGO: any }} env
+ */
+async function handler (request, env) {
+  const url = new URL(request.url)
+  const key = url.pathname.slice(1)
+
+  if (request.method === 'GET') {
+    /** @type {import('./r2').R2Range|undefined} */
+    let range
+    if (request.headers.has('range')) {
+      try {
+        range = toR2Range(request.headers.get('range'))
+      } catch (err) {
+        throw new HttpError('Invalid Range', { status: 400, cause: err })
+      }
     }
 
-    const object = await env.DAGCARGO.get(key)
+    const object = await env.DAGCARGO.get(key, { range })
     if (!object || !object.body) {
-      return new Response('Object Not Found', { status: 404 })
+      throw new HttpError('Object Not Found', { status: 404 })
     }
 
     const headers = new Headers()
@@ -23,4 +47,17 @@ export default {
 
     return new Response(object.body, { headers })
   }
+
+  if (request.method === 'HEAD') {
+    const object = await env.DAGCARGO.head(key)
+    if (!object) throw new HttpError('Object Not Found', { status: 404 })
+
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+    headers.set('etag', object.httpEtag)
+
+    return new Response(undefined, { headers })
+  }
+
+  throw new HttpError('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } })
 }

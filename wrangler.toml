@@ -1,21 +1,7 @@
 name = "dagcargo-bucket"
-type = "javascript"
-route = ''
-zone_id = ''
-usage_model = ''
-compatibility_flags = []
-workers_dev = true
+main = "./dist/worker.mjs"
 compatibility_date = "2022-06-15"
 account_id = "fffa4b4363a7e5250af8357087263b3a"
-
-[build.upload]
-format = "modules"
-dir = "./src"
-main = "./worker.js"
-
-[[build.upload.rules]]
-type = "ESModule"
-globs = ["**/*.js"]
 
 [[r2_buckets]]
 binding = 'DAGCARGO'
