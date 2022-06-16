@@ -14,5 +14,5 @@ export function toR2Range (value) {
   if (unit !== 'bytes') throw new Error(`Unsupported range unit: ${unit}`)
   return suffix != null
     ? { suffix }
-    : { offset: first, length: last != null ? last - first : undefined }
+    : { offset: first, length: last != null ? last - first + 1 : undefined }
 }

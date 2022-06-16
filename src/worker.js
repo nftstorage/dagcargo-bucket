@@ -41,11 +41,27 @@ async function handler (request, env) {
       throw new HttpError('Object Not Found', { status: 404 })
     }
 
+    const status = range ? 206 : 200
     const headers = new Headers()
     object.writeHttpMetadata(headers)
     headers.set('etag', object.httpEtag)
 
-    return new Response(object.body, { headers })
+    if (range) {
+      let first, last
+      if (range.suffix != null) {
+        first = object.size - range.suffix
+        last = object.size - 1
+      } else {
+        first = range.offset || 0
+        last = range.length != null ? first + range.length - 1 : object.size - 1
+      }
+      headers.set('content-range', `bytes ${first}-${last}/${object.size}`)
+      headers.set('content-length', last - first + 1)
+    } else {
+      headers.set('content-length', object.size)
+    }
+
+    return new Response(object.body, { headers, status })
   }
 
   if (request.method === 'HEAD') {
@@ -55,6 +71,8 @@ async function handler (request, env) {
     const headers = new Headers()
     object.writeHttpMetadata(headers)
     headers.set('etag', object.httpEtag)
+    headers.set('accept-ranges', 'bytes')
+    headers.set('content-length', object.size)
 
     return new Response(undefined, { headers })
   }
