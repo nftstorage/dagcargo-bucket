@@ -9,7 +9,7 @@ import parseRange from 'http-range-parse'
  */
 export function toR2Range (value) {
   const result = parseRange(value)
-  if (result.ranges) throw new Error('Multiple ranges not supported')
+  if (result.ranges) throw new Error('Multipart ranges not supported')
   const { unit, first, last, suffix } = result
   if (unit !== 'bytes') throw new Error(`Unsupported range unit: ${unit}`)
   return suffix != null
