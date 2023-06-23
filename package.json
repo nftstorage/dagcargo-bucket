@@ -14,9 +14,6 @@
     "esbuild": "^0.14.44",
     "standard": "^17.0.0"
   },
-  "dependencies": {
-    "http-range-parse": "^1.0.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nftstorage/dagcargo-bucket.git"

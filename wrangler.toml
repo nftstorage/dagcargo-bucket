@@ -1,8 +1,20 @@
 name = "dagcargo-bucket"
 main = "./dist/worker.mjs"
-compatibility_date = "2022-06-15"
+compatibility_date = "2023-06-23"
 account_id = "fffa4b4363a7e5250af8357087263b3a"
+r2_buckets = [
+  { binding = "DAGCARGO", bucket_name = "dagcargo" }
+]
 
-[[r2_buckets]]
-binding = 'DAGCARGO'
-bucket_name = 'dagcargo'
+[vars]
+ROUNDABOUT_API_URL = "https://roundabout.web3.storage/key/"
+DAGCARGO_BUCKET_NAME = "dagcargo"
+
+
+[env.vasco]
+r2_buckets = [
+  { binding = "DAGCARGO", bucket_name = "dagcargo" }
+]
+[env.vasco.vars]
+ROUNDABOUT_API_URL = "https://roundabout.web3.storage/key/"
+DAGCARGO_BUCKET_NAME = "dagcargo"
